@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Authors Service Database
+  db-authors:
+    image: postgres:15-alpine
+    container_name: db-authors
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: authors_db
+    volumes:
+      - authors_data:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+    networks:
+      - editorial-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Publications Service Database
+  db-publications:
+    image: postgres:15-alpine
+    container_name: db-publications
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: publications_db
+    volumes:
+      - publications_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - editorial-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Authors Service
+  authors-service:
+    build:
+      context: ./authors-service
+      dockerfile: Dockerfile
+    container_name: authors-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-authors:5432/authors_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
+      SERVER_PORT: 8001
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "8001:8001"
+    depends_on:
+      db-authors:
+        condition: service_healthy
+    networks:
+      - editorial-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/authors"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Publications Service
+  publications-service:
+    build:
+      context: ./publications-service
+      dockerfile: Dockerfile
+    container_name: publications-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-publications:5432/publications_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
+      SERVER_PORT: 8002
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      AUTHORS_SERVICE_URL: http://authors-service:8001/api
+    ports:
+      - "8002:8002"
+    depends_on:
+      db-publications:
+        condition: service_healthy
+      authors-service:
+        condition: service_healthy
+    networks:
+      - editorial-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/api/publications"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      REACT_APP_AUTHORS_API_URL: http://localhost:8001/api
+      REACT_APP_PUBLICATIONS_API_URL: http://localhost:8002/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - authors-service
+      - publications-service
+    networks:
+      - editorial-network
+
+volumes:
+  authors_data:
+  publications_data:
+
+networks:
+  editorial-network:
+    driver: bridge

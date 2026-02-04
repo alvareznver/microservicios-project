@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="EditorialProcess" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_CreateDraft" name="Crear Borrador">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:userTask id="Task_AuthorWrite" name="Escribir Contenido" implementation="##unspecified">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="Task_EditorReview" name="Revisar Contenido">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="Task_ReviewerEvaluate" name="Evaluar Académicamente">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="¿Aprobado?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ChangesRequired</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- Rama: Aprobado -->
+    <bpmn:serviceTask id="Task_PreparePublication" name="Preparar Publicación">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_PublishContent" name="Publicar Contenido">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_PublishEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:endEvent id="EndEvent_Published" name="Publicado Exitosamente">
+      <bpmn:incoming>Flow_PublishEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Rama: Cambios Requeridos -->
+    <bpmn:serviceTask id="Task_NotifyChanges" name="Notificar Cambios">
+      <bpmn:incoming>Flow_ChangesRequired</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:userTask id="Task_AuthorModify" name="Realizar Cambios">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_BackToReview</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Rama: Rechazado -->
+    <bpmn:userTask id="Task_GenerateReport" name="Generar Reporte">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:serviceTask id="Task_NotifyRejection" name="Notificar Rechazo">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_RejectEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:endEvent id="EndEvent_Rejected" name="Publicación Rechazada">
+      <bpmn:incoming>Flow_RejectEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Flujos de secuencia -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_CreateDraft" targetRef="Task_AuthorWrite" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_AuthorWrite" targetRef="Task_EditorReview" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_EditorReview" targetRef="Task_ReviewerEvaluate" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ReviewerEvaluate" targetRef="Gateway_Decision" />
+    
+    <!-- Flujos desde gateway -->
+    <bpmn:sequenceFlow id="Flow_Approved" sourceRef="Gateway_Decision" targetRef="Task_PreparePublication" name="Aprobado" />
+    <bpmn:sequenceFlow id="Flow_ChangesRequired" sourceRef="Gateway_Decision" targetRef="Task_NotifyChanges" name="Cambios Requeridos" />
+    <bpmn:sequenceFlow id="Flow_Rejected" sourceRef="Gateway_Decision" targetRef="Task_GenerateReport" name="Rechazado" />
+    
+    <!-- Flujos rama aprobada -->
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_PreparePublication" targetRef="Task_PublishContent" />
+    <bpmn:sequenceFlow id="Flow_PublishEnd" sourceRef="Task_PublishContent" targetRef="EndEvent_Published" />
+    
+    <!-- Flujos rama cambios -->
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_NotifyChanges" targetRef="Task_AuthorModify" />
+    <bpmn:sequenceFlow id="Flow_BackToReview" sourceRef="Task_AuthorModify" targetRef="Task_EditorReview" />
+    
+    <!-- Flujos rama rechaza -->
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_GenerateReport" targetRef="Task_NotifyRejection" />
+    <bpmn:sequenceFlow id="Flow_RejectEnd" sourceRef="Task_NotifyRejection" targetRef="EndEvent_Rejected" />
+    
+  </bpmn:process>
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="EditorialProcess">
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="100" y="250" />
+        <di:waypoint x="150" y="250" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
