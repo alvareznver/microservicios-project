@@ -10,13 +10,13 @@ public class AuthorException extends RuntimeException {
     }
 }
 
-class AuthorNotFoundException extends AuthorException {
+public class AuthorNotFoundException extends AuthorException {
     public AuthorNotFoundException(String message) {
         super(message);
     }
 }
 
-class AuthorAlreadyExistsException extends AuthorException {
+public class AuthorAlreadyExistsException extends AuthorException {
     public AuthorAlreadyExistsException(String message) {
         super(message);
     }

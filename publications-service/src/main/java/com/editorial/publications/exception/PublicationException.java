@@ -10,19 +10,19 @@ public class PublicationException extends RuntimeException {
     }
 }
 
-class PublicationNotFoundException extends PublicationException {
+public class PublicationNotFoundException extends PublicationException {
     public PublicationNotFoundException(String message) {
         super(message);
     }
 }
 
-class AuthorNotFoundException extends PublicationException {
+public class AuthorNotFoundException extends PublicationException {
     public AuthorNotFoundException(String message) {
         super(message);
     }
 }
 
-class AuthorServiceException extends PublicationException {
+public class AuthorServiceException extends PublicationException {
     public AuthorServiceException(String message) {
         super(message);
     }
@@ -32,7 +32,7 @@ class AuthorServiceException extends PublicationException {
     }
 }
 
-class PublicationInvalidStateException extends PublicationException {
+public class PublicationInvalidStateException extends PublicationException {
     public PublicationInvalidStateException(String message) {
         super(message);
     }
