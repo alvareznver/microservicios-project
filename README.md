@@ -359,28 +359,3 @@ mvn test
 │ Author │    │Publication│
 └────────┘    └──────────┘
 ```
-
-## 🔐 Seguridad
-
-- Validación de entrada en todos los DTOs
-- Manejo centralizado de excepciones
-- Transaccionalidad en operaciones críticas
-- Contraseñas de BD en variables de entorno
-- Soft delete para autores (no eliminación física)
-
-## 📄 Licencia
-
-Proyecto educativo - Uso libre para propósitos académicos.
-
-## 👥 Autores
-
-Proyecto desarrollado como parte del curso de Arquitectura de Microservicios.
-
-## 📞 Soporte
-
-Para reportar problemas o sugerencias, crear un issue en el repositorio del proyecto.
-
----
-
-**Última actualización**: Enero 2024  
-**Versión**: 1.0.0
